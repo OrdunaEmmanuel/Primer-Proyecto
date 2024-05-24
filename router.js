@@ -6,6 +6,8 @@ const proveedorController = require('./controllers/provedor');
 const vendedorController = require('./controllers/vendedores');
 const compradorController = require('./controllers/comprador');
 const transaccionController = require('./controllers/transaccion');
+const authController = require('./controllers/usuarios');
+const authMiddleware = require('./middlewares/auth'); 
 
 router.use((req, res, next) => {
   if (!req.headers['content-type'] || req.headers['content-type'] !== 'application/json') {
@@ -16,41 +18,41 @@ router.use((req, res, next) => {
 
 
 router.use(bodyParser.json());
-
-
 router.get('/', (req, res) => {
   res.send('¡Hola! Este es el servidor en localhost.');
 });
 
-router.post('/productos', productoController.crearProducto);
-router.get('/productos', productoController.obtenerProductos);
-router.get('/productos/:id', productoController.obtenerProductoPorId);
-router.put('/productos/:id', productoController.actualizarProducto);
-router.delete('/productos/:id', productoController.eliminarProducto);
+router.post('/register', authController.register);
+router.post('/login', authController.login);
 
-router.post('/proveedores', proveedorController.crearProveedor);
-router.get('/proveedores', proveedorController.obtenerProveedores);
-router.get('/proveedores/:id', proveedorController.obtenerProveedorPorId);
-router.put('/proveedores/:id', proveedorController.actualizarProveedor);
-router.delete('/proveedores/:id', proveedorController.eliminarProveedor);
+router.post('/productos', authMiddleware, productoController.crearProducto);
+router.get('/productos', authMiddleware, productoController.obtenerProductos);
+router.get('/productos/:id', authMiddleware, productoController.obtenerProductoPorId);
+router.put('/productos/:id', authMiddleware, productoController.actualizarProducto);
+router.delete('/productos/:id', authMiddleware, productoController.eliminarProducto);
 
-router.post('/vendedores', vendedorController.crearVendedor);
-router.get('/vendedores', vendedorController.obtenerVendedores);
-router.get('/vendedores/:id', vendedorController.obtenerVendedorPorId);
-router.put('/vendedores/:id', vendedorController.actualizarVendedor);
-router.delete('/vendedores/:id', vendedorController.eliminarVendedor);
+router.post('/proveedores', authMiddleware, proveedorController.crearProveedor);
+router.get('/proveedores', authMiddleware, proveedorController.obtenerProveedores);
+router.get('/proveedores/:id', authMiddleware, proveedorController.obtenerProveedorPorId);
+router.put('/proveedores/:id', authMiddleware, proveedorController.actualizarProveedor);
+router.delete('/proveedores/:id', authMiddleware, proveedorController.eliminarProveedor);
 
-router.post('/compradores', compradorController.crearComprador);
-router.get('/compradores', compradorController.obtenerCompradores);
-router.get('/compradores/:id', compradorController.obtenerCompradorPorId);
-router.put('/compradores/:id', compradorController.actualizarComprador);
-router.delete('/compradores/:id', compradorController.eliminarComprador);
+router.post('/vendedores', authMiddleware, vendedorController.crearVendedor);
+router.get('/vendedores', authMiddleware, vendedorController.obtenerVendedores);
+router.get('/vendedores/:id', authMiddleware, vendedorController.obtenerVendedorPorId);
+router.put('/vendedores/:id', authMiddleware, vendedorController.actualizarVendedor);
+router.delete('/vendedores/:id', authMiddleware, vendedorController.eliminarVendedor);
 
-router.post('/transacciones', transaccionController.crearTransaccion);
-router.get('/transacciones', transaccionController.obtenerTransacciones);
-router.get('/transacciones/:id', transaccionController.obtenerTransaccionPorId);
-router.put('/transacciones/:id', transaccionController.actualizarTransaccion);
-router.delete('/transacciones/:id', transaccionController.eliminarTransaccion);
+router.post('/compradores', authMiddleware, compradorController.crearComprador);
+router.get('/compradores', authMiddleware, compradorController.obtenerCompradores);
+router.get('/compradores/:id', authMiddleware, compradorController.obtenerCompradorPorId);
+router.put('/compradores/:id', authMiddleware, compradorController.actualizarComprador);
+router.delete('/compradores/:id', authMiddleware, compradorController.eliminarComprador);
 
+router.post('/transacciones', authMiddleware, transaccionController.crearTransaccion);
+router.get('/transacciones', authMiddleware, transaccionController.obtenerTransacciones);
+router.get('/transacciones/:id', authMiddleware, transaccionController.obtenerTransaccionPorId);
+router.put('/transacciones/:id', authMiddleware, transaccionController.actualizarTransaccion);
+router.delete('/transacciones/:id', authMiddleware, transaccionController.eliminarTransaccion);
 
 module.exports = router;

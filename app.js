@@ -3,9 +3,13 @@ const router = require('./router');
 const Initdb = require('./config/db');
 const bodyParser = require('body-parser');
 const methodOverride = require('method-override');
+require('dotenv').config();
 const app = express();
 
 Initdb();
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.use(function(req, res, next){
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,7 +21,6 @@ app.use(function(req, res, next){
 
 app.use(express.json());
 app.use(methodOverride());
-app.use(bodyParser.json());
 app.use(router);
 
 const server = app.listen(2000, () => {
