@@ -14,7 +14,7 @@ productoController.crearProducto = async (req, res) => {
     console.log('Producto creado exitosamente ');
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Error al crear el producto' });
+    res.status(500).json({ error: 'Er ror al crear el producto' });
   }
 };
 
