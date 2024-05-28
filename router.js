@@ -9,12 +9,12 @@ const transaccionController = require('./controllers/transaccion');
 const authController = require('./controllers/usuarios');
 const authMiddleware = require('./middlewares/auth'); 
 //
-//router.use((req, res, next) => {
-//  if (!req.headers['content-type'] || req.headers['content-type'] !== 'application/json') {
-//    return res.status(400).json({ error: 'El encabezado Content-Type debe estar configurado como application/json' });
-//  }
-//  next();
-//});
+router.use((req, res, next) => {
+  if (!req.headers['content-type'] || req.headers['content-type'] !== 'application/json') {
+    return res.status(400).json({ error: 'El encabezado Content-Type debe estar configurado como application/json' });
+  }
+  next();
+});
 
 
 router.use(bodyParser.json());
