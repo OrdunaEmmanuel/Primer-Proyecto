@@ -1,0 +1,1063 @@
+openapi: 3.0.0
+info:
+  title: API Documentation
+  version: 1.0.0
+  description: Esta es la documentación de la API de nuestra aplicación.
+servers:
+  - url: http://localhost:2000
+    description: Servidor de desarrollo
+components:
+  schemas:
+    Usuario:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Nombre de usuario
+        password:
+          type: string
+          format: password
+          description: Contraseña del usuario (se guardará encriptada)
+      required:
+        - username
+        - password
+    Proveedor:
+      type: object
+      properties:
+        nombre:
+          type: string
+          description: Nombre del proveedor
+        direccion:
+          type: string
+          description: Dirección del proveedor
+        contacto:
+          type: string
+          description: Información de contacto del proveedor
+        productos_entregados:
+          type: array
+          description: Productos entregados por el proveedor
+          items:
+            type: object
+            properties:
+              producto_id:
+                type: string
+                description: ID del producto entregado
+              cantidad:
+                type: number
+                description: Cantidad del producto entregado
+              fecha_entrega:
+                type: string
+                format: date-time
+                description: Fecha y hora de la entrega del producto
+    Comprador:
+      type: object
+      properties:
+        nombre:
+          type: string
+          description: Nombre del comprador
+        direccion:
+          type: string
+          description: Dirección del comprador
+        contacto:
+          type: string
+          description: Información de contacto del comprador
+        compras_realizadas:
+          type: array
+          description: Compras realizadas por el comprador
+          items:
+            type: object
+            properties:
+              precio_unitario:
+                type: number
+                description: Precio unitario del producto comprado
+              producto_id:
+                type: string
+                description: ID del producto comprado
+              cantidad:
+                type: number
+                description: Cantidad del producto comprado
+              fecha_venta:
+                type: string
+                format: date-time
+                description: Fecha y hora de la venta
+              vendedor_id:
+                type: string
+                description: ID del vendedor asociado a la venta
+    Vendedor:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        direccion:
+          type: string
+        contacto:
+          type: string
+        ventas_realizadas:
+          type: array
+          items:
+            type: object
+            properties:
+              producto_id:
+                type: string
+              cantidad:
+                type: integer
+              fecha_venta:
+                type: string
+              comprador_id:
+                type: string
+              precio_unitario:
+                type: number
+    Producto:
+      type: object
+      properties:
+        _id:
+          type: string
+        nombre:
+          type: string
+        marca:
+          type: string
+        descripcion:
+          type: string
+        precio:
+          type: number
+        clase:
+          type: string
+        subclase:
+          type: string
+        stock:
+          type: integer
+        proveedor_id:
+          type: string
+        ventas:
+          type: array
+          items:
+            type: object
+            properties:
+              vendedor_id:
+                type: string
+              cantidad:
+                type: integer
+              fecha_venta:
+                type: string
+              comprador_id:
+                type: string
+              precio_unitario:
+                type: number
+    Transaccion:
+      type: object
+      properties:
+        _id:
+          type: string
+        tipo:
+          type: string
+          enum: ['venta', 'compra']
+        vendedor_id:
+          type: string
+        comprador_id:
+          type: string
+        producto_id:
+          type: string
+        cantidad:
+          type: integer
+        precio_unitario:
+          type: number
+        fecha_transaccion:
+          type: string
+paths:
+  /register:
+    post:
+      summary: Registrar un nuevo usuario
+      tags: 
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Usuario'
+      responses:
+        '201':
+          description: Usuario registrado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Usuario Registrado
+        '500':
+          description: Error al registrar Usuario
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al registrar Usuario
+  /login:
+    post:
+      summary: Iniciar sesión de un usuario
+      tags: 
+        - Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - username
+                - password
+              properties:
+                username:
+                  type: string
+                  description: Nombre de usuario
+                password:
+                  type: string
+                  description: Contraseña del usuario
+      responses:
+        '200':
+          description: Usuario ha iniciado sesión correctamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Usuario ha iniciado sesión correctamente
+                  token:
+                    type: string
+                    description: Token JWT para autenticación
+        '400':
+          description: Usuario no encontrado o credenciales inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    examples:
+                      Usuario no encontrado:
+                        value: Usuario no encontrado
+                      Credenciales inválidas:
+                        value: Credenciales inválidas
+        '500':
+          description: Error al iniciar sesión
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al iniciar sesión
+  /proveedores:
+    post:
+      summary: Crear un nuevo proveedor
+      tags:
+        - Proveedores
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Proveedor'
+      responses:
+        '201':
+          description: Proveedor creado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Proveedor creado exitosamente
+        '500':
+          description: Error al crear el proveedor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al crear el proveedor
+    get:
+      summary: Obtener todos los proveedores
+      tags:
+        - Proveedores
+      responses:
+        '200':
+          description: Lista de proveedores obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Proveedor'
+        '500':
+          description: Error al obtener los proveedores
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al obtener los proveedores
+  /proveedores/{id}:
+    get:
+      summary: Obtener un proveedor por su ID
+      tags:
+        - Proveedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: ID del proveedor a obtener
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proveedor obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Proveedor'
+        '404':
+          description: Proveedor no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Proveedor no encontrado
+        '500':
+          description: Error al obtener el proveedor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al obtener el proveedor
+    put:
+      summary: Actualizar un proveedor por su ID
+      tags:
+        - Proveedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Proveedor'
+      responses:
+        '200':
+          description: Proveedor actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Proveedor actualizado exitosamente
+        '404':
+          description: Proveedor no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Proveedor no encontrado
+    delete:
+      summary: Eliminar un proveedor por su ID
+      tags:
+        - Proveedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: ID del proveedor que se desea eliminar
+      responses:
+        '200':
+          description: Proveedor eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Proveedor eliminado exitosamente
+                  proveedor:
+                    type: object
+                    description: Detalles del proveedor eliminado
+                    example: {}
+        '404':
+          description: Proveedor no encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Proveedor no encontrado
+        '400':
+          description: ID de proveedor no válido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: ID de proveedor no válido
+        '500':
+          description: Error al eliminar el proveedor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Error al eliminar el proveedor
+  
+        summary: Eliminar un comprador por su ID
+        tags:
+          - Compradores
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              description: ID del comprador que se desea eliminar
+        responses:
+          '200':
+            description: Comprador eliminado exitosamente
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Comprador eliminado exitosamente
+                    comprador:
+                      $ref: '#/components/schemas/Comprador'
+          '404':
+            description: Comprador no encontrado
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Comprador no encontrado
+          '400':
+            description: ID de comprador no válido
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: ID de comprador no válido
+          '500':
+            description: Error al eliminar el comprador
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error
+  /compradores:
+    post:
+        summary: Crear un nuevo comprador
+        tags:
+          - Compradores
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comprador'
+        responses:
+          '201':
+            description: Comprador creado exitosamente
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Comprador creado exitosamente
+                    comprador:
+                      $ref: '#/components/schemas/Comprador'
+          '400':
+            description: Error al crear el comprador
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Error al crear el comprador
+    get:
+        summary: Obtener todos los compradores
+        tags:
+          - Compradores
+        responses:
+          '200':
+            description: Lista de compradores obtenida exitosamente
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Comprador'
+          '400':
+            description: Error al obtener los compradores
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Error al obtener los compradores
+  /compradores/{id}: 
+    get:
+        summary: Obtener un comprador por su ID
+        tags:
+          - Compradores
+        parameters:
+          - in: path
+            name: id
+            required: true
+            description: ID del comprador a obtener
+            schema:
+              type: string
+        responses:
+          '200':
+            description: Comprador obtenido exitosamente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Comprador'
+          '404':
+            description: Comprador no encontrado
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Comprador no encontrado
+          '400':
+            description: Error al obtener el comprador
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Error al obtener el comprador  
+    put:
+        summary: Actualizar un comprador por su ID
+        tags:
+          - Compradores
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+        requestBody:
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comprador'
+        responses:
+          '200':
+            description: Comprador actualizado exitosamente
+            content:
+              application/json:
+                schema:
+                  $ref: '#/components/schemas/Comprador'
+          '404':
+            description: Comprador no encontrado
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Comprador no encontrado
+    delete:
+        summary: Eliminar un comprador por su ID
+        tags:
+          - Compradores
+        parameters:
+          - in: path
+            name: id
+            required: true
+            schema:
+              type: string
+              description: ID del comprador que se desea eliminar
+        responses:
+          '200':
+            description: Comprador eliminado exitosamente
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: Comprador eliminado exitosamente
+                    comprador:
+                      $ref: '#/components/schemas/Comprador'
+          '404':
+            description: Comprador no encontrado
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Comprador no encontrado
+          '400':
+            description: ID de comprador no válido
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: ID de comprador no válido
+          '500':
+            description: Error al eliminar el comprador
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    error:
+                      type: string
+                      example: Comprador no encontrado    
+  /vendedores:
+    get:
+      summary: Obtener todos los vendedores
+      tags: 
+        - Vendedores
+      responses:
+        '200':
+          description: Lista de vendedores obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vendedor'
+        '500':
+          description: Error al obtener los vendedores
+    post:
+      summary: Crear un nuevo vendedor
+      tags: 
+        - Vendedores
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendedor'
+      responses:
+        '201':
+          description: Vendedor creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendedor'
+        '500':
+          description: Error al crear el vendedor
+  /vendedores/{id}:
+    get:
+      summary: Obtener un vendedor por ID
+      tags: 
+        - Vendedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vendedor encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendedor'
+        '404':
+          description: Vendedor no encontrado
+        '500':
+          description: Error al obtener el vendedor
+    put:
+      summary: Actualizar un vendedor por ID
+      tags: 
+        - Vendedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vendedor'
+      responses:
+        '200':
+          description: Vendedor actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendedor'
+        '404':
+          description: Vendedor no encontrado
+        '500':
+          description: Error al actualizar el vendedor
+    delete:
+      summary: Eliminar un vendedor por ID
+      tags: 
+        - Vendedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Vendedor eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vendedor'
+        '404':
+          description: Vendedor no encontrado
+        '500':
+          description: Error al eliminar el vendedor
+  /vendedores/{id}/ventas:
+    post:
+      summary: Registrar una venta para un vendedor
+      tags: 
+        - Vendedores
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                producto_id:
+                  type: string
+                cantidad:
+                  type: integer
+              required:
+                - producto_id
+                - cantidad
+      responses:
+        '201':
+          description: Venta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '400':
+          description: Todos los campos son obligatorios
+        '500':
+          description: Error al crear la venta
+  /productos:
+    get:
+      summary: Obtener todos los productos
+      tags: 
+        - Productos
+      responses:
+        '200':
+          description: Lista de productos obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Producto'
+        '500':
+          description: Error al obtener los productos
+    post:
+      summary: Crear un nuevo producto
+      tags: 
+        - Productos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+      responses:
+        '201':
+          description: Producto creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '500':
+          description: Error al crear el producto
+  /productos/{id}:
+    get:
+      summary: Obtener un producto por ID
+      tags: 
+        - Productos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Producto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error al obtener el producto
+    put:
+      summary: Actualizar un producto por ID
+      tags: 
+        - Productos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Producto'
+      responses:
+        '200':
+          description: Producto actualizado correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error al actualizar el producto
+    delete:
+      summary: Eliminar un producto por ID
+      tags: 
+        - Productos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Producto eliminado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Producto'
+        '404':
+          description: Producto no encontrado
+        '500':
+          description: Error al eliminar el producto
+  /productos/{id}/ventas:
+    post:
+      summary: Registrar una venta para un producto
+      tags: 
+        - Productos
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                producto_id:
+                  type: string
+                cantidad:
+                  type: integer
+              required:
+                - producto_id
+                - cantidad
+      responses:
+        '201':
+          description: Venta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '400':
+          description: Todos los campos son obligatorios
+        '500':
+          description: Error al crear la venta
+  /transacciones:
+    get:
+      summary: Obtener todas las transacciones
+      tags: [Transacciones]
+      responses:
+        '200':
+          description: Lista de transacciones obtenida correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Transaccion'
+        '500':
+          description: Error al obtener las transacciones
+    post:
+      summary: Crear una nueva transacción
+      tags: [Transacciones]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaccion'
+      responses:
+        '201':
+          description: Transacción creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '400':
+          description: Error al crear la transacción
+  /transacciones/{id}:
+    get:
+      summary: Obtener una transacción por ID
+      tags: [Transacciones]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transacción encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Transacción no encontrada
+        '500':
+          description: Error al obtener la transacción
+    put:
+      summary: Actualizar una transacción por ID
+      tags: [Transacciones]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transaccion'
+      responses:
+        '200':
+          description: Transacción actualizada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Transacción no encontrada
+        '500':
+          description: Error al actualizar la transacción
+    delete:
+      summary: Eliminar una transacción por ID
+      tags: [Transacciones]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Transacción eliminada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Transaccion'
+        '404':
+          description: Transacción no encontrada
+        '500':
+          description: Error al eliminar la transacción        
