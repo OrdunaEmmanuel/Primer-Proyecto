@@ -5,15 +5,11 @@ const Producto = require('../models/Productos');
 
 const transaccionController = {};
 
-
-
-
 transaccionController.crearTransaccion = async (req, res) => {
   try {
     const nuevaTransaccion = new Transaccion(req.body);
     await nuevaTransaccion.save();
 
-  
     await actualizarDocumentos(nuevaTransaccion);
 
     res.status(201).json({ message: 'Transacción creada exitosamente', transaccion: nuevaTransaccion });
@@ -27,9 +23,9 @@ async function actualizarDocumentos(transaccion) {
   const { tipo, vendedor_id, comprador_id, producto_id, cantidad } = transaccion;
 
   try {
-    const vendedorPromise = await actualizarVendedor(vendedor_id, transaccion);
-    const compradorPromise = await actualizarComprador(comprador_id, transaccion);
-    const productoPromise = await actualizarProducto(producto_id, transaccion, tipo, cantidad);
+    const vendedorPromise = actualizarVendedor(vendedor_id, transaccion);
+    const compradorPromise = actualizarComprador(comprador_id, transaccion);
+    const productoPromise = actualizarProducto(producto_id, transaccion, tipo, cantidad);
 
     await Promise.all([vendedorPromise, compradorPromise, productoPromise]);
   } catch (error) {
@@ -81,18 +77,17 @@ async function actualizarProducto(producto_id, transaccion, tipo, cantidad) {
   return productonew;
 }
 
-
-
 transaccionController.obtenerTransacciones = async (req, res) => {
   try {
-    const transacciones = await Transaccion.find();
+    const { tipo, skip = 0, limit = 10 } = req.query;
+    const filtro = tipo ? { tipo } : {};
+    const transacciones = await Transaccion.find(filtro).skip(parseInt(skip)).limit(parseInt(limit));
     res.status(200).json(transacciones);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener las transacciones' });
   }
 };
-
 
 transaccionController.obtenerTransaccionPorId = async (req, res) => {
   try {
@@ -103,7 +98,6 @@ transaccionController.obtenerTransaccionPorId = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener la transacción' });
   }
 };
-
 
 transaccionController.actualizarTransaccion = async (req, res) => {
   try {
@@ -118,7 +112,6 @@ transaccionController.actualizarTransaccion = async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar la transacción' });
   }
 };
-
 
 transaccionController.eliminarTransaccion = async (req, res) => {
   try {
