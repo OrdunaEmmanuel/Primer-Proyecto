@@ -1,26 +1,40 @@
-const Transaccion = require('../models/Transacciones');
 const Producto = require('../models/Productos');
+const Transaccion = require('../models/Transacciones');
 const mongoose = require('mongoose');
+const multer = require('multer');
+const multerS3 = require('multer-s3');
+const s3 = require('../config/aws-config');
+require('dotenv').config();
+const vendedorController = require('../controllers/vendedores'); // Importar el controlador de vendedores
+const upload = require('../config/aws-upload-config'); 
 
 const productoController = {};
-const vendedorController = {};
 
 
 productoController.crearProducto = async (req, res) => {
-  try {
-    const nuevoProducto = new Producto(req.body);
-    await nuevoProducto.save();
-    res.status(201).json({ message: 'Producto creado exitosamente', producto: nuevoProducto });
-    console.log('Producto creado exitosamente ');
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Er ror al crear el producto' });
-  }
+  upload.single('imagen')(req, res, async function (err) {
+    if (err) {
+      return res.status(500).json({ error: 'Error al subir la imagen' });
+    }
+
+    try {
+      const nuevoProducto = new Producto({
+        ...req.body,
+        imagen: req.file ? req.file.location : null
+      });
+      await nuevoProducto.save();
+      res.status(201).json({ message: 'Producto creado exitosamente', producto: nuevoProducto });
+      console.log('Producto creado exitosamente');
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: 'Error al crear el producto' });
+    }
+  });
 };
 
 productoController.obtenerProductos = async (req, res) => {
   try {
-    const productos = await Producto.find(req.params.id);
+    const productos = await Producto.find();
     res.status(200).json(productos);
   } catch (error) {
     console.error(error);
@@ -70,43 +84,4 @@ productoController.eliminarProducto = async (req, res) => {
   }
 };
 
-// Actualizar el documento del producto
-
-
-// Crear una nueva transacción de venta realizada por un vendedor
-vendedorController.crearVenta = async (req, res) => {
-  try {
-    const { producto_id, cantidad } = req.body;
-
-    if (!producto_id || !cantidad) {
-      return res.status(400).json({ error: 'Todos los campos son obligatorios: producto_id, cantidad' });
-    }
-
-    const nuevaVenta = new Transaccion({ 
-      tipo: 'venta', 
-      vendedor_id: req.params.id,
-      producto_id,
-      cantidad
-    });
-    await nuevaVenta.save();
-
-    // Actualizar el stock del producto
-    const producto = await Producto.findById(producto_id);
-    if (producto) {
-      producto.stock -= cantidad; // Restar la cantidad vendida al stock
-      await producto.save();
-    }
-
-    res.status(201).json({ message: 'Venta creada exitosamente', venta: nuevaVenta });
-  } catch (error) {
-    console.error(error);
-
-    if (error.name === 'ValidationError') {
-      res.status(400).json({ error: 'Error de validación', detalles: error.errors });
-    } else {
-      res.status(500).json({ error: 'Error al crear la venta' });
-    }
-  }
-};
-module.exports = vendedorController;
-module.exports = productoController;
+module.exports = { productoController, vendedorController };

@@ -8,13 +8,14 @@ const compradorController = require('./controllers/comprador');
 const transaccionController = require('./controllers/transaccion');
 const authController = require('./controllers/usuarios');
 const authMiddleware = require('./middlewares/auth'); 
+
 //
-//router.use((req, res, next) => {
-//  if (!req.headers['content-type'] || req.headers['content-type'] !== 'application/json') {
-  //  return res.status(400).json({ error: 'El encabezado Content-Type debe estar configurado como application/json' });
-//  }
-  //next();
-//});
+router.use((req, res, next) => {
+if (!req.headers['content-type'] || req.headers['content-type'] !== 'application/json') {
+  return res.status(400).json({ error: 'El encabezado Content-Type debe estar configurado como application/json' });
+ }
+  next();
+});
 
 
 router.use(bodyParser.json());
@@ -25,11 +26,11 @@ router.get('/', (req, res) => {
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 
-router.post('/productos', authMiddleware, productoController.crearProducto);
-router.get('/productos', authMiddleware, productoController.obtenerProductos);
-router.get('/productos/:id', authMiddleware, productoController.obtenerProductoPorId);
-router.put('/productos/:id', authMiddleware, productoController.actualizarProducto);
-router.delete('/productos/:id', authMiddleware, productoController.eliminarProducto);
+router.post('/productos', authMiddleware, productoController.productoController.crearProducto);
+router.get('/productos', authMiddleware, productoController.productoController.obtenerProductos);
+router.get('/productos/:id', authMiddleware, productoController.productoController.obtenerProductoPorId);
+router.put('/productos/:id', authMiddleware, productoController.productoController.actualizarProducto);
+router.delete('/productos/:id', authMiddleware, productoController.productoController.eliminarProducto);
 
 router.post('/proveedores', authMiddleware, proveedorController.crearProveedor);
 router.get('/proveedores', authMiddleware, proveedorController.obtenerProveedores);
